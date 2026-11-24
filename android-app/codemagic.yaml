@@ -1,0 +1,36 @@
+workflows:
+  android-homecraft-apk:
+    name: HomeCraft Android Organizer APK
+    max_build_duration: 45
+    instance_type: linux_x2
+    environment:
+      java: 17
+      vars:
+        PACKAGE_NAME: "com.homecraft.organizer"
+    scripts:
+      - name: Bootstrap Gradle Wrapper
+        script: |
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            gradle wrapper --gradle-version 8.9
+          fi
+          chmod +x gradlew
+      - name: Set Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+      - name: Run Unit Tests
+        script: |
+          ./gradlew testDebugUnitTest --no-daemon
+      - name: Build Debug & Release APKs
+        script: |
+          ./gradlew assembleDebug assembleRelease --no-daemon
+    artifacts:
+      - app/build/outputs/apk/**/*.apk
+      - app/build/outputs/bundle/**/*.aab
+      - app/build/outputs/mapping/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - builds@homecraft.local
+        notify:
+          success: true
+          failure: true

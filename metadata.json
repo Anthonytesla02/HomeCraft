@@ -1,0 +1,6 @@
+{
+  "name": "HomeCraft Android Organizer",
+  "description": "Cross-device Android home screen organizer APK builder with permission manager, app interface scanner, adaptive theme designer, and Codemagic.io CI/CD integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
