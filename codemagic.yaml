@@ -8,16 +8,19 @@ workflows:
       vars:
         PACKAGE_NAME: "com.homecraft.organizer"
     scripts:
-      - name: Bootstrap Gradle Wrapper
+      - name: Install Gradle 8.9 & Bootstrap Wrapper
         script: |
           cd android-app
-          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            gradle wrapper --gradle-version 8.9
+          if [ ! -f "./gradlew" ] || [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o /tmp/gradle-8.9.zip
+            unzip -q -o /tmp/gradle-8.9.zip -d /tmp
+            /tmp/gradle-8.9/bin/gradle wrapper --gradle-version 8.9 --no-daemon
           fi
           chmod +x gradlew
-      - name: Set Android SDK location
+      - name: Set Android SDK location & Accept Licenses
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android-app/local.properties"
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
       - name: Run Android Unit Tests
         script: |
           cd android-app
