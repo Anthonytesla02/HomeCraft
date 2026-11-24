@@ -2,7 +2,7 @@ workflows:
   android-homecraft-apk:
     name: HomeCraft Android Organizer APK
     max_build_duration: 45
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     environment:
       java: 17
       vars:
@@ -18,8 +18,9 @@ workflows:
           chmod +x gradlew
       - name: Set Android SDK location & Accept Licenses
         script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          SDK_DIR="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          echo "sdk.dir=$SDK_DIR" > "$CM_BUILD_DIR/local.properties"
+          yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
       - name: Run Unit Tests
         script: |
           ./gradlew testDebugUnitTest --no-daemon
