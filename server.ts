@@ -52,6 +52,14 @@ async function createServer() {
 
   app.get('/api/android-files', (_req, res) => {
     const files = collectAndroidFiles(ANDROID_DIR, ANDROID_DIR);
+    const rootYamlPath = path.resolve(__dirname, 'codemagic.yaml');
+    if (fs.existsSync(rootYamlPath)) {
+      files.unshift({
+        path: 'codemagic.yaml (repo root)',
+        language: 'yaml',
+        content: fs.readFileSync(rootYamlPath, 'utf-8'),
+      });
+    }
     res.json({ files });
   });
 

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
+  Copy,
   Download,
   FileCode2,
   Loader2,
@@ -36,6 +38,7 @@ export function CodemagicPanel({ onDownloadZip }: CodemagicPanelProps) {
   const [isTriggering, setIsTriggering] = useState(false);
   const [buildState, setBuildState] = useState<BuildPollState | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+  const [copiedYaml, setCopiedYaml] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -67,6 +70,20 @@ export function CodemagicPanel({ onDownloadZip }: CodemagicPanelProps) {
   }, []);
 
   const activeFile = files.find((f) => f.path === selectedFilePath) ?? files[0];
+
+  const handleCopyActiveYaml = async () => {
+    const yamlTarget =
+      (activeFile?.language === 'yaml' ? activeFile : files.find((f) => f.path === 'codemagic.yaml')) ??
+      activeFile;
+    if (!yamlTarget) return;
+    try {
+      await navigator.clipboard.writeText(yamlTarget.content);
+      setCopiedYaml(true);
+      window.setTimeout(() => setCopiedYaml(false), 2000);
+    } catch {
+      // Clipboard blocked in restricted context; file remains selectable in viewer
+    }
+  };
 
   const handleTriggerBuild = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,12 +329,36 @@ export function CodemagicPanel({ onDownloadZip }: CodemagicPanelProps) {
       </div>
 
       <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/70">
+        <div className="px-4 py-3 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-3 bg-neutral-50/70">
           <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
             <FileCode2 className="w-4 h-4 text-neutral-500" aria-hidden="true" />
-            <span>Android APK Source Files</span>
+            <span>Android APK Source &amp; codemagic.yaml</span>
           </div>
-          <span className="text-xs text-neutral-500 tabular-nums">{files.length} project files</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-neutral-500 tabular-nums">{files.length} project files</span>
+            <button
+              type="button"
+              onClick={handleCopyActiveYaml}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-800 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors whitespace-nowrap"
+            >
+              {copiedYaml ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+                  Copied YAML
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                  Copy codemagic.yaml
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="px-4 py-2.5 border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-600">
+          If Codemagic asks to create <span className="font-mono text-neutral-800">codemagic.yaml</span>, use{' '}
+          <span className="font-mono text-neutral-800">codemagic.yaml (repo root)</span> when connecting this full repository, or{' '}
+          <span className="font-mono text-neutral-800">codemagic.yaml</span> when uploading the exported Project ZIP.
         </div>
 
         {filesLoading ? (
